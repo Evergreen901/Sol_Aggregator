@@ -1,13 +1,14 @@
-const processSaleRecord = async (parsedData) => {
+const processSaleRecord = (data) => {
   const getWalletValue = require('./getWalletValue');
 
-  const seller = parsedData.data.seller;
-  const buyer = parsedData.data.buyer;
-  const sellerWalletValue = await getWalletValue(seller);
-  const buyerWalletValue = await getWalletValue(buyer);
-
-  await createOrUpdateValueRecord(seller, sellerWalletValue);
-  await createOrUpdateValueRecord(buyer, buyerWalletValue);
+  const seller = data.data.seller;
+  const buyer = data.data.buyer;
+  getWalletValue(seller).then((value) =>
+    createOrUpdateValueRecord(seller, value),
+  );
+  getWalletValue(buyer).then((value) =>
+    createOrUpdateValueRecord(buyer, value),
+  );
 };
 
 const createOrUpdateValueRecord = async (wallet, value) => {

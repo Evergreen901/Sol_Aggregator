@@ -27,6 +27,7 @@ const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
 
 (async () => {
   await getWalletValue('4Ge5L9fUtQc7ERaSUWig9mKbRz16KhzBsVJtYGRVE88r');
+  return;
   await connect(MONGODB_CONNECTION_STRING);
 
   // Register a callback to listen to the wallet (ws subscription)
