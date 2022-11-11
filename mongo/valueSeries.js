@@ -15,4 +15,4 @@ dataSchema.set('timestamps', true);
 const ValueSeries =
   models.solvalueseries || model('solvalueseries', dataSchema);
 
-module.exports = { ValueSeries };
+module.exports = ValueSeries;

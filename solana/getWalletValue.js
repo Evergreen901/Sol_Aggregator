@@ -3,7 +3,12 @@ const {
   keypairIdentity,
   bundlrStorage,
 } = require('@metaplex-foundation/js');
-const { Connection, clusterApiUrl, Keypair } = require('@solana/web3.js');
+const {
+  Connection,
+  clusterApiUrl,
+  Keypair,
+  LAMPORTS_PER_SOL,
+} = require('@solana/web3.js');
 
 const connection = new Connection(clusterApiUrl('mainnet-beta'));
 const wallet = Keypair.generate();
@@ -20,8 +25,12 @@ const metaplex = Metaplex.make(connection)
 // };
 
 const getWalletValue = async (address) => {
-  const nfts = await get(
-    `https://nft.yaku.ai/api/magiceden/v2/wallets/${address}/tokens`,
+  const nfts = JSON.parse(
+    JSON.stringify(
+      await get(
+        `https://nft.yaku.ai/api/magiceden/v2/wallets/${address}/tokens`,
+      ),
+    ),
   );
 
   let totalValue = 0;
@@ -32,10 +41,10 @@ const getWalletValue = async (address) => {
           `https://nft.yaku.ai/api/magiceden//v2/collections/${nft.collectionName}/stats`,
         )
       : {};
-    totalValue += tokenStats.floorPrice;
+    totalValue += tokenStats?.floorPrice ?? 0;
   }
 
-  return totalValue;
+  return totalValue / LAMPORTS_PER_SOL;
 };
 
 const get = async (url) => {

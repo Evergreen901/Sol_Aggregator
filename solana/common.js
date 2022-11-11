@@ -24,11 +24,12 @@ const createOrUpdateValueRecord = async (wallet, value) => {
   ]);
 
   if (
+    !(latestRecord?.length > 0) ||
     new Date(latestRecord?.[0].updatedAt ?? 0)
       .toISOString()
       .substring(0, 10) !== new Date().toISOString().substring(0, 10)
   ) {
-    await ValueSeries.insertOne({ wallet, value });
+    await ValueSeries.create({ wallet, value });
   } else {
     await ValueSeries.updateOne(
       { _id: toObjectId(latestRecord[0]._id.toString()) },

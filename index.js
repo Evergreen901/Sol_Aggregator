@@ -26,8 +26,13 @@ const MONGODB_CONNECTION_STRING = 'mongodb://0.0.0.0:27017/test';
 const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
 
 (async () => {
-  await getWalletValue('4Ge5L9fUtQc7ERaSUWig9mKbRz16KhzBsVJtYGRVE88r');
-  return;
+  // TODO delete
+  // const value = await getWalletValue(
+  //   '4Ge5L9fUtQc7ERaSUWig9mKbRz16KhzBsVJtYGRVE88r',
+  // );
+  // console.log(value);
+  // return;
+
   await connect(MONGODB_CONNECTION_STRING);
 
   // Register a callback to listen to the wallet (ws subscription)
