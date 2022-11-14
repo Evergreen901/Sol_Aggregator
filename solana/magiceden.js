@@ -1,4 +1,8 @@
-const { LAMPORTS_PER_SOL } = require('@solana/web3.js');
+const {
+  clusterApiUrl,
+  Connection,
+  LAMPORTS_PER_SOL,
+} = require('@solana/web3.js');
 const { getTransaction } = require('./getTransaction');
 const { Transactions } = require('../mongo/transactions');
 const { TransactionTypes } = require('./transactionTypes');
@@ -6,8 +10,13 @@ const { TransactionTypes } = require('./transactionTypes');
 const MARKETPLACE = 'MagicEden';
 const PUBLIC_KEY = 'M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K';
 
-const processTrans = async (connection, logData) => {
+const processTrans = async (logData, callback) => {
   try {
+    const connection = new Connection(
+      clusterApiUrl('mainnet-beta'),
+      'confirmed',
+    );
+
     const transData = await getTransaction(connection, logData.signature);
     if (transData == null) {
       console.error('transData is null');
@@ -19,7 +28,13 @@ const processTrans = async (connection, logData) => {
       logData.logs.includes('Program log: Instruction: Sell') &&
       logData.logs.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(logData, logData.signature, transData, TransactionTypes.sell);
+      parseLog(
+        logData,
+        logData.signature,
+        transData,
+        TransactionTypes.sell,
+        callback,
+      );
     } else if (
       // Sale
       logData.logs.includes('Program log: Instruction: Deposit') &&
@@ -27,13 +42,25 @@ const processTrans = async (connection, logData) => {
       logData.logs.includes('Program log: Instruction: ExecuteSale') &&
       logData.logs.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(logData, logData.signature, transData, TransactionTypes.sale);
+      parseLog(
+        logData,
+        logData.signature,
+        transData,
+        TransactionTypes.sale,
+        callback,
+      );
     } else if (
       // Place Bid
       logData.logs.includes('Program log: Instruction: Buy') &&
       logData.logs.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(logData, logData.signature, transData, TransactionTypes.buy);
+      parseLog(
+        logData,
+        logData.signature,
+        transData,
+        TransactionTypes.buy,
+        callback,
+      );
     } else if (
       // Cancel Listing
       logData.logs.includes('Program log: Instruction: CancelSell') &&
@@ -45,6 +72,7 @@ const processTrans = async (connection, logData) => {
         logData.signature,
         transData,
         TransactionTypes.cancelSell,
+        callback,
       );
     } else if (
       // Cancel Bid
@@ -56,6 +84,7 @@ const processTrans = async (connection, logData) => {
         logData.signature,
         transData,
         TransactionTypes.cancelBuy,
+        callback,
       );
     } else {
       console.log(
@@ -73,7 +102,7 @@ const processTrans = async (connection, logData) => {
   }
 };
 
-const parseLog = async (logData, sign, transData, type) => {
+const parseLog = async (logData, sign, transData, type, callback) => {
   try {
     let data = {};
 
@@ -109,6 +138,8 @@ const parseLog = async (logData, sign, transData, type) => {
     });
 
     console.log({ Saved: newDocument._id.toString() });
+
+    if (callback) callback(data);
 
     if (type === TransactionTypes.sale) {
       const { processSaleRecord } = require('./common');

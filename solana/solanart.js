@@ -1,4 +1,8 @@
-const { LAMPORTS_PER_SOL } = require('@solana/web3.js');
+const {
+  clusterApiUrl,
+  Connection,
+  LAMPORTS_PER_SOL,
+} = require('@solana/web3.js');
 const { getTransaction } = require('./getTransaction');
 const { Transactions } = require('../mongo/transactions');
 const { TransactionTypes } = require('./transactionTypes');
@@ -6,8 +10,13 @@ const { TransactionTypes } = require('./transactionTypes');
 const MARKETPLACE = 'Solanart';
 const PUBLIC_KEY = 'CJsLwbP1iu5DuUikHEJnLfANgKy6stB2uFgvBBHoyxwz';
 
-const processTrans = async (connection, signature) => {
+const processTrans = async (signature, callback) => {
   try {
+    const connection = new Connection(
+      clusterApiUrl('mainnet-beta'),
+      'confirmed',
+    );
+
     const transData = await getTransaction(connection, signature);
     if (transData == null) {
       console.error('transData is null');
@@ -22,13 +31,13 @@ const processTrans = async (connection, signature) => {
       logMessages.includes('Program log: Create') &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.sale);
+      parseLog(transData, TransactionTypes.sale, callback);
     } else if (
       // CreateOffer
       logMessages.includes('Program log: Instruction: CreateOffer') &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.buy);
+      parseLog(transData, TransactionTypes.buy, callback);
     } else if (
       // Sell
       logMessages.includes(
@@ -36,19 +45,19 @@ const processTrans = async (connection, signature) => {
       ) &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.sell);
+      parseLog(transData, TransactionTypes.sell, callback);
     } else if (
       // Buy = Unlist
       logMessages.includes('Program log: Instruction: Buy') &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.cancelSell);
+      parseLog(transData, TransactionTypes.cancelSell, callback);
     } else if (
       // Update price
       logMessages.includes('Program log: Instruction: Update price') &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.updateBuyPrice);
+      parseLog(transData, TransactionTypes.updateBuyPrice, callback);
     } else {
       console.log(
         `-------------------------- Unknown transaction type (${MARKETPLACE}) ----------------------------`,
@@ -63,7 +72,7 @@ const processTrans = async (connection, signature) => {
   }
 };
 
-const parseLog = async (transData, type) => {
+const parseLog = async (transData, type, callback) => {
   try {
     let data = {};
 
@@ -98,6 +107,8 @@ const parseLog = async (transData, type) => {
     });
 
     console.log({ Saved: newDocument._id.toString() });
+
+    if (callback) callback(data);
 
     if (type === TransactionTypes.sale) {
       const { processSaleRecord } = require('./common');

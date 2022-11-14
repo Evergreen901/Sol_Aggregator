@@ -1,28 +1,4 @@
-// const {
-//   Metaplex,
-//   keypairIdentity,
-//   bundlrStorage,
-// } = require('@metaplex-foundation/js');
-const {
-  // Connection,
-  // clusterApiUrl,
-  // Keypair,
-  LAMPORTS_PER_SOL,
-} = require('@solana/web3.js');
-
-// const connection = new Connection(clusterApiUrl('mainnet-beta'));
-// const wallet = Keypair.generate();
-
-// const metaplex = Metaplex.make(connection)
-//   .use(keypairIdentity(wallet))
-//   .use(bundlrStorage());
-
-// const Moralis = require('moralis').default;
-// const { SolNetwork, SolAddress } = require('@moralisweb3/sol-utils');
-
-// const sleep = (milliseconds) => {
-//   return new Promise((resolve) => setTimeout(resolve, milliseconds));
-// };
+const { LAMPORTS_PER_SOL } = require('@solana/web3.js');
 
 const getWalletValue = async (address) => {
   try {

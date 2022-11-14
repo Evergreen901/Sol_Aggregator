@@ -1,4 +1,8 @@
-const { LAMPORTS_PER_SOL } = require('@solana/web3.js');
+const {
+  clusterApiUrl,
+  Connection,
+  LAMPORTS_PER_SOL,
+} = require('@solana/web3.js');
 const { getTransaction } = require('./getTransaction');
 const { Transactions } = require('../mongo/transactions');
 const { getTokenAddress } = require('./getTokenAddress');
@@ -7,8 +11,13 @@ const { TransactionTypes } = require('./transactionTypes');
 const MARKETPLACE = 'OpenSea';
 const PUBLIC_KEY = 'hausS13jsjafwWwGqZTUQRmWyvyxn9EQpqMwV1PBBmk';
 
-const processTrans = async (connection, signature) => {
+const processTrans = async (signature, callback) => {
   try {
+    const connection = new Connection(
+      clusterApiUrl('mainnet-beta'),
+      'confirmed',
+    );
+
     const transData = await getTransaction(connection, signature);
     if (transData == null) {
       console.error('transData is null');
@@ -22,19 +31,19 @@ const processTrans = async (connection, signature) => {
       logMessages.includes('Program log: Instruction: Approve') &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.sell);
+      parseLog(transData, TransactionTypes.sell, callback);
     } else if (
       logMessages.includes('Program log: Instruction: Cancel') &&
       logMessages.includes('Program log: Instruction: WithdrawFromFee') &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.cancelSell);
+      parseLog(transData, TransactionTypes.cancelSell, callback);
     } else if (
       logMessages.includes('Program log: Instruction: Buy') &&
       logMessages.includes('Program log: Instruction: ExecuteSale') &&
       logMessages.includes(`Program ${PUBLIC_KEY} success`)
     ) {
-      parseLog(transData, TransactionTypes.sale);
+      parseLog(transData, TransactionTypes.sale, callback);
     } else {
       console.log(
         `-------------------------- Unknown transaction type (${MARKETPLACE}) ----------------------------`,
@@ -49,7 +58,7 @@ const processTrans = async (connection, signature) => {
   }
 };
 
-const parseLog = async (transData, type) => {
+const parseLog = async (transData, type, callback) => {
   try {
     let data = {};
 
@@ -80,6 +89,8 @@ const parseLog = async (transData, type) => {
     });
 
     console.log({ Saved: newDocument._id.toString() });
+
+    if (callback) callback(data);
 
     if (type === TransactionTypes.sale) {
       const { processSaleRecord } = require('./common');
