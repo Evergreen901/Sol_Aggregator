@@ -130,20 +130,22 @@ const parseLog = async (logData, sign, transData, type, callback) => {
     console.log({ LogData: logData.signature });
     console.log({ data });
 
-    const newDocument = await Transactions.create({
+    const parsed = {
       marketplace: MARKETPLACE,
       signature: logData.signature,
       instruction: type,
       data,
-    });
+    };
+
+    const newDocument = await Transactions.create(parsed);
 
     console.log({ Saved: newDocument._id.toString() });
 
-    if (callback) callback(data);
+    if (callback) callback(parsed);
 
     if (type === TransactionTypes.sale) {
       const { processSaleRecord } = require('./common');
-      await processSaleRecord({ data });
+      processSaleRecord(parsed);
     }
   } catch (err) {
     console.log(`Error in parse${MARKETPLACE}Log`);

@@ -20,7 +20,7 @@ const {
   processTrans: processOpenSeaTrans,
 } = require('./solana/opensea');
 
-const WEBSOCKET_PORT = 3337;
+const WEBSOCKET_PORT = 3338;
 const MONGODB_CONNECTION_STRING = 'mongodb://0.0.0.0:27017/test';
 
 const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');

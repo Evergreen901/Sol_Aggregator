@@ -3,6 +3,11 @@ const processSaleRecord = (data) => {
 
   const seller = data.data.seller;
   const buyer = data.data.buyer;
+
+  if (!buyer || !seller) {
+    console.error('Invalid sale record', data);
+    return;
+  }
   getWalletValue(seller).then((value) =>
     createOrUpdateValueRecord(seller, value),
   );

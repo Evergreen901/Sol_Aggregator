@@ -1,8 +1,9 @@
 const { LAMPORTS_PER_SOL } = require('@solana/web3.js');
 
 const getWalletValue = async (address) => {
+  let nfts = null;
   try {
-    const nfts = JSON.parse(
+    nfts = JSON.parse(
       JSON.stringify(
         await get(
           `https://nft.yaku.ai/api/magiceden/v2/wallets/${address}/tokens`,
@@ -23,7 +24,7 @@ const getWalletValue = async (address) => {
 
     return totalValue / LAMPORTS_PER_SOL;
   } catch (err) {
-    console.error({ err });
+    console.error({ err, address, nfts });
     return 0;
   }
 };
