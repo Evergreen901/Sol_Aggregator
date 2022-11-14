@@ -1,21 +1,21 @@
+// const {
+//   Metaplex,
+//   keypairIdentity,
+//   bundlrStorage,
+// } = require('@metaplex-foundation/js');
 const {
-  Metaplex,
-  keypairIdentity,
-  bundlrStorage,
-} = require('@metaplex-foundation/js');
-const {
-  Connection,
-  clusterApiUrl,
-  Keypair,
+  // Connection,
+  // clusterApiUrl,
+  // Keypair,
   LAMPORTS_PER_SOL,
 } = require('@solana/web3.js');
 
-const connection = new Connection(clusterApiUrl('mainnet-beta'));
-const wallet = Keypair.generate();
+// const connection = new Connection(clusterApiUrl('mainnet-beta'));
+// const wallet = Keypair.generate();
 
-const metaplex = Metaplex.make(connection)
-  .use(keypairIdentity(wallet))
-  .use(bundlrStorage());
+// const metaplex = Metaplex.make(connection)
+//   .use(keypairIdentity(wallet))
+//   .use(bundlrStorage());
 
 // const Moralis = require('moralis').default;
 // const { SolNetwork, SolAddress } = require('@moralisweb3/sol-utils');
@@ -25,26 +25,31 @@ const metaplex = Metaplex.make(connection)
 // };
 
 const getWalletValue = async (address) => {
-  const nfts = JSON.parse(
-    JSON.stringify(
-      await get(
-        `https://nft.yaku.ai/api/magiceden/v2/wallets/${address}/tokens`,
+  try {
+    const nfts = JSON.parse(
+      JSON.stringify(
+        await get(
+          `https://nft.yaku.ai/api/magiceden/v2/wallets/${address}/tokens`,
+        ),
       ),
-    ),
-  );
+    );
 
-  let totalValue = 0;
+    let totalValue = 0;
 
-  for (const nft of nfts) {
-    const tokenStats = nft.collectionName
-      ? await get(
-          `https://nft.yaku.ai/api/magiceden//v2/collections/${nft.collectionName}/stats`,
-        )
-      : {};
-    totalValue += tokenStats?.floorPrice ?? 0;
+    for (const nft of nfts) {
+      const tokenStats = nft.collectionName
+        ? await get(
+            `https://nft.yaku.ai/api/magiceden//v2/collections/${nft.collectionName}/stats`,
+          )
+        : {};
+      totalValue += tokenStats?.floorPrice ?? 0;
+    }
+
+    return totalValue / LAMPORTS_PER_SOL;
+  } catch (err) {
+    console.error({ err });
+    return 0;
   }
-
-  return totalValue / LAMPORTS_PER_SOL;
 };
 
 const get = async (url) => {

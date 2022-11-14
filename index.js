@@ -1,5 +1,9 @@
 const { clusterApiUrl, Connection, PublicKey } = require('@solana/web3.js');
 const { connect } = require('mongoose');
+const WebSocket = require('ws');
+const { createServer } = require('http');
+const { Server } = WebSocket;
+
 const {
   PUBLIC_KEY: ME_PUBLIC_KEY,
   processTrans: processMETrans,
@@ -24,6 +28,19 @@ const getWalletValue = require('./solana/getWalletValue');
 
 const MONGODB_CONNECTION_STRING = 'mongodb://0.0.0.0:27017/test';
 const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+
+const server = createServer();
+const wss = new Server({ server });
+
+wss.on('connection', (ws) => {
+  ws.isAlive = true;
+});
+
+wss.on('close', function close() {
+  clearInterval(interval);
+});
+
+server.listen(3337);
 
 (async () => {
   // TODO delete
